@@ -57,6 +57,37 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
         return ['posts', 'post', 'list'];
     }
 
+
+    /**
+     * Help function for get posts.
+     */
+    protected function get_posts_list($settings)
+    {
+        $args = array(
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'posts_per_page' => $settings['count'],
+            'orderby' => $settings['order']
+        );
+
+        $posts = get_posts($args);
+
+        $posts_list = [];
+
+        foreach ($posts as $post) {
+            $posts_list[] = [
+                'title' => get_the_title($post->ID),
+                'permalink' => get_the_permalink($post->ID),
+                'thumbnail' => get_the_post_thumbnail_url($post->ID),
+                'date' => get_the_date('', $post->ID),
+                'author' => get_the_author($post->ID)
+            ];
+        }
+
+        return $posts_list;
+    }
+
+
     /**
      * Register posts list widget controls.
      */
@@ -121,10 +152,11 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
                 'label' => esc_html__('Order', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::SELECT,
                 'options' => [
-                    'desc-public-date' => esc_html__('Descending publication date', 'elementor-posts-list-widget'),
-                    'desc-number-views'  => esc_html__('Descending number of views', 'elementor-posts-list-widget'),
+                    'date-desc' => esc_html__('Descending publication date', 'elementor-posts-list-widget'),
+                    'date-asc' => esc_html__('Asc publication date', 'elementor-posts-list-widget'),
+                    'views-desc'  => esc_html__('Descending number of views', 'elementor-posts-list-widget'),
                 ],
-                'default' => 'desc-public-date'
+                'default' => 'date-desc'
             ]
         );
 
@@ -196,27 +228,10 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
                         'default' => esc_html__('List Title', 'elementor-posts-list-widget'),
                         'label_block' => true,
                     ],
-                    [
-                        'name' => 'list_content',
-                        'label' => esc_html__('Content', 'elementor-posts-list-widget'),
-                        'type' => \Elementor\Controls_Manager::WYSIWYG,
-                        'default' => esc_html__('List Content', 'elementor-posts-list-widget'),
-                        'show_label' => false,
-                    ],
-                    [
-                        'name' => 'list_color',
-                        'label' => esc_html__('Color', 'elementor-posts-list-widget'),
-                        'type' => \Elementor\Controls_Manager::COLOR,
-                    ]
                 ],
                 'default' => [
                     [
                         'list_title' => esc_html__('Title #1', 'elementor-posts-list-widget'),
-                        'list_content' => esc_html__('Item content. Click the edit button to change this text.', 'elementor-posts-list-widget'),
-                    ],
-                    [
-                        'list_title' => esc_html__('Title #2', 'elementor-posts-list-widget'),
-                        'list_content' => esc_html__('Item content. Click the edit button to change this text.', 'elementor-posts-list-widget'),
                     ],
                 ],
                 'title_field' => '{{{ list_title }}}',
@@ -231,5 +246,29 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
      */
     protected function render()
     {
+        $settings = $this->get_settings_for_display();
+
+        $postsVariable = $settings['posts_variables_control'];
+
+        if ($postsVariable === 'auto') {
+
+            $postCount = $settings['posts_count'];
+            $postOrder = explode('-', $settings['posts_order_control']);
+
+            $args = [
+                'count' => $postCount,
+                'order' => [
+                    $postOrder[0] => $postOrder[1]
+                ]
+            ];
+
+            echo '<pre>';
+            var_dump($this->get_posts_list($args));
+            echo '</pre>';
+        }
+
+        if ($postsVariable === 'manually') {
+            echo '132';
+        }
     }
 }
