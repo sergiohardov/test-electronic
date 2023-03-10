@@ -1,0 +1,62 @@
+.elementor-posts-list-widget * {
+  box-sizing: border-box;
+}
+
+.elementor-posts-list-widget a {
+  color: #e59620;
+}
+.elementor-posts-list-widget {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.elementor-posts-list-item {
+  background: #fff;
+  box-shadow: 0px 0px 10px #00000057;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  width: calc(100% / 3 - 14px);
+  display: flex;
+  flex-direction: column;
+}
+.elementor-posts-list-author {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 18px;
+  background: #e59620;
+  padding: 5px 20px;
+  border-radius: 100px;
+  color: #fff;
+}
+.elementor-posts-list-image {
+  height: 250px !important;
+  width: 100%;
+  object-fit: cover;
+}
+.elementor-posts-list-content {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.elementor-posts-list-title {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+.elementor-posts-list-excerpt {
+  margin-bottom: 15px;
+}
+.elementor-posts-list-footer {
+  margin-top: auto;
+  margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.elementor-posts-list-date {
+  font-size: 16px;
+}
+.elementor-posts-list-more {
+}

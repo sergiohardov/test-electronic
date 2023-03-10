@@ -34,6 +34,14 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
     }
 
     /**
+     * Depends style widget.
+     */
+    public function get_style_depends()
+    {
+        return array('elementor-posts-list-widget');
+    }
+
+    /**
      * Get custom help URL.
      */
     public function get_custom_help_url()
@@ -56,6 +64,7 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
     {
         return ['posts', 'post', 'list', 'blog'];
     }
+
 
     /**
      * Helpers: Function for get posts list.
@@ -96,7 +105,9 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
             'excerpt' => get_the_excerpt($id),
             'thumbnail' => get_the_post_thumbnail_url($id),
             'date' => get_the_date('', $id),
-            'author' => get_the_author($id)
+            'author' => get_the_author($id),
+
+            'views' => get_post_meta($id, 'post_views', true)
         ];
 
         return $posts_content;
@@ -152,8 +163,7 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
                 'type' => \Elementor\Controls_Manager::SELECT,
                 'options' => [
                     'date-desc' => __('Descending publication date', 'elementor-posts-list-widget'),
-                    'date-asc' => __('Asc publication date', 'elementor-posts-list-widget'),
-                    'views-desc'  => __('Descending number of views', 'elementor-posts-list-widget'),
+                    'post_views-desc'  => __('Descending number of views', 'elementor-posts-list-widget'),
                 ],
                 'label_block' => true,
                 'default' => 'date-desc'
@@ -248,14 +258,36 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
                 echo "Something wrong...";
                 break;
         }
+?>
 
+        <div class="elementor-posts-list-widget">
 
-        foreach ($postsId as $id) {
-            $post = $this->get_posts_contents($id);
+            <?php foreach ($postsId as $id) {
+                $post = $this->get_posts_contents($id);
 
-            echo '<pre>';
-            var_dump($post);
-            echo '</pre>';
-        }
+                var_dump($post);
+
+            ?>
+
+                <div class="elementor-posts-list-item">
+                    <span class="elementor-posts-list-author"><?php echo $post['author']; ?></span>
+                    <img class="elementor-posts-list-image" src="<?php echo $post['thumbnail']; ?>" alt="">
+                    <div class="elementor-posts-list-content">
+                        <a href="<?php echo $post['permalink']; ?>">
+                            <h2 class="elementor-posts-list-title"><?php echo $post['title']; ?></h2>
+                        </a>
+                        <p class="elementor-posts-list-excerpt"><?php echo $post['excerpt']; ?></p>
+                        <span>Views: <?php echo $post['views'] ?  $post['views'] : '0'; ?></span>
+                        <div class="elementor-posts-list-footer">
+                            <span class="elementor-posts-list-date"><?php echo $post['date']; ?></span>
+                            <a class="elementor-posts-list-more" href="<?php echo $post['permalink']; ?>">Read More...</a>
+                        </div>
+                    </div>
+                </div>
+
+            <?php } ?>
+
+        </div>
+<?php
     }
 }
