@@ -69,29 +69,22 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
     /**
      * Helpers: Function for get posts list.
      */
-    protected function get_posts_list($settings = ['count' => -1, 'order' => 'date-desc'])
+    private function get_posts_list($settings = ['count' => -1, 'order' => 'date-desc'])
     {
 
         $order = explode('-', $settings['order']);
 
+        $args = [
+            'post_type'      => 'post',
+            'post_status'    => 'publish',
+            'posts_per_page' => $settings['count'],
+            'orderby'        => $order[0],
+            'order'          => $order[1],
+        ];
+
         if ($order[0] === 'post_views') {
-            $args = array(
-                'post_type' => 'post',
-                'post_status' => 'publish',
-                'posts_per_page' => $settings['count'],
-                'meta_key' => $order[0],
-                'orderby' => 'meta_value_num',
-                'order' => $order[1],
-            );
-        } else {
-            $args = array(
-                'post_type' => 'post',
-                'post_status' => 'publish',
-                'posts_per_page' => $settings['count'],
-                'orderby' => [
-                    $order[0] => $order[1]
-                ]
-            );
+            $args['meta_key'] = $order[0];
+            $args['orderby']  = 'meta_value_num';
         }
 
 
@@ -109,7 +102,7 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
     /**
      * Helpers: Function for get posts content.
      */
-    protected function get_posts_contents($id)
+    private function get_posts_content($id)
     {
         $posts_content = [
             'title' => get_the_title($id),
@@ -210,26 +203,26 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
 
         $repeater->add_control(
             'posts_select_control',
-            array(
+            [
                 'label' => __('Choose the post', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::SELECT,
                 'options' => $this->get_posts_list(),
                 'label_block' => true,
-            )
+                'default' => key($this->get_posts_list()),
+            ]
         );
 
         $this->add_control(
             'posts_list',
-            array(
+            [
                 'label' => __('List', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::REPEATER,
                 'fields' => $repeater->get_controls(),
                 'title_field' => 'Post ID# {{{ posts_select_control }}}',
-                'default' => [],
                 'condition' => [
                     'posts_show_method' => 'manually',
                 ],
-            )
+            ]
         );
 
         $this->end_controls_section();
@@ -265,17 +258,13 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
                     $postsId[] = $item['posts_select_control'];
                 }
                 break;
-
-            default:
-                echo "Something wrong...";
-                break;
         } ?>
 
         <div class="elementor-posts-list-widget">
 
             <?php foreach ($postsId as $id) { ?>
 
-                <?php $post = $this->get_posts_contents($id); ?>
+                <?php $post = $this->get_posts_content($id); ?>
 
                 <div class="elementor-posts-list-item">
                     <span class="elementor-posts-list-author"><?php echo $post['author']; ?></span>
