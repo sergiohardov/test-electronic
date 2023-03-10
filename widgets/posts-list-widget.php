@@ -74,14 +74,26 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
 
         $order = explode('-', $settings['order']);
 
-        $args = array(
-            'post_type' => 'post',
-            'post_status' => 'publish',
-            'posts_per_page' => $settings['count'],
-            'orderby' => [
-                $order[0] => $order[1]
-            ]
-        );
+        if ($order[0] === 'post_views') {
+            $args = array(
+                'post_type' => 'post',
+                'post_status' => 'publish',
+                'posts_per_page' => $settings['count'],
+                'meta_key' => $order[0],
+                'orderby' => 'meta_value_num',
+                'order' => $order[1],
+            );
+        } else {
+            $args = array(
+                'post_type' => 'post',
+                'post_status' => 'publish',
+                'posts_per_page' => $settings['count'],
+                'orderby' => [
+                    $order[0] => $order[1]
+                ]
+            );
+        }
+
 
         $posts = get_posts($args);
 
@@ -257,17 +269,13 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
             default:
                 echo "Something wrong...";
                 break;
-        }
-?>
+        } ?>
 
         <div class="elementor-posts-list-widget">
 
-            <?php foreach ($postsId as $id) {
-                $post = $this->get_posts_contents($id);
+            <?php foreach ($postsId as $id) { ?>
 
-                var_dump($post);
-
-            ?>
+                <?php $post = $this->get_posts_contents($id); ?>
 
                 <div class="elementor-posts-list-item">
                     <span class="elementor-posts-list-author"><?php echo $post['author']; ?></span>
@@ -277,9 +285,16 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
                             <h2 class="elementor-posts-list-title"><?php echo $post['title']; ?></h2>
                         </a>
                         <p class="elementor-posts-list-excerpt"><?php echo $post['excerpt']; ?></p>
-                        <span>Views: <?php echo $post['views'] ?  $post['views'] : '0'; ?></span>
+
                         <div class="elementor-posts-list-footer">
+
+                            <div class="elementor-posts-list-views">
+                                <img src="<?php echo plugin_dir_url(__DIR__) . 'assets/img/eye.svg'; ?>" alt="Eye icon">
+                                <span><?php echo $post['views'] ?></span>
+                            </div>
+
                             <span class="elementor-posts-list-date"><?php echo $post['date']; ?></span>
+
                             <a class="elementor-posts-list-more" href="<?php echo $post['permalink']; ?>">Read More...</a>
                         </div>
                     </div>
@@ -288,6 +303,5 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
             <?php } ?>
 
         </div>
-<?php
-    }
+<?php }
 }

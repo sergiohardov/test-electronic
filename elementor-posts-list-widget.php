@@ -26,7 +26,7 @@ add_action('elementor/widgets/register', 'register_posts_list_widget');
 
 
 /**
- * Register styles.
+ * Register Posts List Styles.
  */
 function register_posts_list_frontend_stylesheets()
 {
@@ -37,17 +37,56 @@ add_action('elementor/frontend/before_enqueue_styles', 'register_posts_list_fron
 
 
 /**
- * Draft Function set post views
+ * When activating the plugin, 
+ * for all existing posts that do not have post_views, 
+ * set the default value to 0
+ */
+function set_empty_post_views()
+{
+	$posts = get_posts([
+		'post_type' => 'post',
+		'posts_per_page' => -1,
+		'fields' => 'ids',
+	]);
+
+	foreach ($posts as $post_id) {
+		$post_views = get_post_meta($post_id, 'post_views', true);
+
+		if (empty($post_views)) {
+			update_post_meta($post_id, 'post_views', 0);
+		}
+	}
+}
+
+register_activation_hook(__FILE__, 'set_empty_post_views');
+
+
+/**
+ * For posts that have been created or saved but without a post_views value, 
+ * set the default value to 0
+ */
+function save_post_views($post_id)
+{
+	$post_views = get_post_meta($post_id, 'post_views', true);
+
+	if ($post_views < 1) {
+		$post_views = 0;
+		update_post_meta($post_id, 'post_views', $post_views);
+	}
+}
+
+add_action('save_post', 'save_post_views');
+
+
+/**
+ * For posts to which the user goes, 
+ * the post_views counter is increased by 1
  */
 function set_post_views()
 {
 	if (is_single()) {
 		$post_id = get_queried_object_id();
 		$post_views = get_post_meta($post_id, 'post_views', true);
-
-		if ($post_views == '') {
-			$post_views = 0;
-		}
 
 		$post_views++;
 

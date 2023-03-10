@@ -55,8 +55,18 @@
   justify-content: space-between;
   align-items: center;
 }
-.elementor-posts-list-date {
+.elementor-posts-list-views {
+  display: flex;
+  align-items: center;
   font-size: 16px;
 }
-.elementor-posts-list-more {
+.elementor-posts-list-views img {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+.elementor-posts-list-date {
+  margin-left: 10px;
+  margin-right: auto;
+  font-size: 16px;
 }
