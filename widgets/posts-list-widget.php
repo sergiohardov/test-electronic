@@ -54,20 +54,24 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
      */
     public function get_keywords()
     {
-        return ['posts', 'post', 'list'];
+        return ['posts', 'post', 'list', 'blog'];
     }
 
-
     /**
-     * Help function for get posts list.
+     * Helpers: Function for get posts list.
      */
-    protected function get_posts_list($settings = ['count' => -1, 'order' => ['date' => 'desc']])
+    protected function get_posts_list($settings = ['count' => -1, 'order' => 'date-desc'])
     {
+
+        $order = explode('-', $settings['order']);
+
         $args = array(
             'post_type' => 'post',
             'post_status' => 'publish',
             'posts_per_page' => $settings['count'],
-            'orderby' => $settings['order']
+            'orderby' => [
+                $order[0] => $order[1]
+            ]
         );
 
         $posts = get_posts($args);
@@ -81,13 +85,12 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
         return $posts_list;
     }
 
-
     /**
-     * Help function for get posts content.
+     * Helpers: Function for get posts content.
      */
     protected function get_posts_contents($id)
     {
-        $post_content = [
+        $posts_content = [
             'title' => get_the_title($id),
             'permalink' => get_the_permalink($id),
             'excerpt' => get_the_excerpt($id),
@@ -96,10 +99,8 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
             'author' => get_the_author($id)
         ];
 
-        return $post_content;
+        return $posts_content;
     }
-
-
 
     /**
      * Register posts list widget controls.
@@ -111,28 +112,28 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
          * Section: Posts List Section
          */
         $this->start_controls_section(
-            'posts_selection_section',
+            'posts_list_section',
             [
-                'label' => esc_html__('Posts Lists', 'elementor-posts-list-widget'),
+                'label' => __('Posts Lists', 'elementor-posts-list-widget'),
                 'tab' => \Elementor\Controls_Manager::TAB_CONTENT,
             ]
         );
 
         /**
-         * Control: Posts show variables
+         * Control: Posts select show method
          */
         $this->add_control(
-            'posts_variables_control',
+            'posts_show_method',
             [
-                'label' => esc_html__('Choose the method', 'elementor-posts-list-widget'),
+                'label' => __('Choose the method', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::CHOOSE,
                 'options' => [
                     'auto' => [
-                        'title' => esc_html__('Auto', 'elementor-posts-list-widget'),
+                        'title' => __('Auto', 'elementor-posts-list-widget'),
                         'icon' => 'eicon-preview-medium',
                     ],
                     'manually' => [
-                        'title' => esc_html__('Manually', 'elementor-posts-list-widget'),
+                        'title' => __('Manually', 'elementor-posts-list-widget'),
                         'icon' => 'eicon-edit',
                     ],
                 ],
@@ -145,39 +146,40 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
          * Control: Posts order
          */
         $this->add_control(
-            'posts_order_control',
+            'posts_order',
             [
-                'label' => esc_html__('Order', 'elementor-posts-list-widget'),
+                'label' => __('Order', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::SELECT,
                 'options' => [
-                    'date-desc' => esc_html__('Descending publication date', 'elementor-posts-list-widget'),
-                    'date-asc' => esc_html__('Asc publication date', 'elementor-posts-list-widget'),
-                    'views-desc'  => esc_html__('Descending number of views', 'elementor-posts-list-widget'),
+                    'date-desc' => __('Descending publication date', 'elementor-posts-list-widget'),
+                    'date-asc' => __('Asc publication date', 'elementor-posts-list-widget'),
+                    'views-desc'  => __('Descending number of views', 'elementor-posts-list-widget'),
                 ],
+                'label_block' => true,
                 'default' => 'date-desc'
             ]
         );
 
         /**
-         * If select show variable "Auto"
+         * If select show method "Auto"
          * 
          * Control: Posts count
          */
         $this->add_control(
             'posts_count',
             [
-                'label' => esc_html__('Count', 'elementor-posts-list-widget'),
+                'label' => __('Count', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::TEXT,
-                'default' => esc_html__('5', 'elementor-posts-list-widget'),
+                'default' => __('5', 'elementor-posts-list-widget'),
                 'condition' => [
-                    'posts_variables_control' => 'auto',
+                    'posts_show_method' => 'auto',
                 ],
             ]
         );
 
 
         /**
-         * If select show variable "Manually"
+         * If select show method "Manually"
          * 
          * Control: Posts list
          */
@@ -185,23 +187,25 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
         $repeater = new \Elementor\Repeater();
 
         $repeater->add_control(
-            'posts_list_control',
+            'posts_select_control',
             array(
                 'label' => __('Choose the post', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::SELECT,
                 'options' => $this->get_posts_list(),
+                'label_block' => true,
             )
         );
 
         $this->add_control(
             'posts_list',
             array(
-                'label' => __('Posts List', 'elementor-posts-list-widget'),
+                'label' => __('List', 'elementor-posts-list-widget'),
                 'type' => \Elementor\Controls_Manager::REPEATER,
                 'fields' => $repeater->get_controls(),
-                'default' => array(),
+                'title_field' => 'Post ID# {{{ posts_select_control }}}',
+                'default' => [],
                 'condition' => [
-                    'posts_variables_control' => 'manually',
+                    'posts_show_method' => 'manually',
                 ],
             )
         );
@@ -214,35 +218,44 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
      */
     protected function render()
     {
+
         $settings = $this->get_settings_for_display();
 
-        $postsVariable = $settings['posts_variables_control'];
+        $postsShowMethod = $settings['posts_show_method'];
+        $postsId = [];
 
-        if ($postsVariable === 'auto') {
+        switch ($postsShowMethod) {
+            case 'auto':
+                $postsId = [];
 
-            $postCount = $settings['posts_count'];
-            $postOrder = explode('-', $settings['posts_order_control']);
+                $posts = $this->get_posts_list([
+                    'count' => $settings['posts_count'],
+                    'order' => $settings['posts_order']
+                ]);
 
-            $args = [
-                'count' => $postCount,
-                'order' => [
-                    $postOrder[0] => $postOrder[1]
-                ]
-            ];
+                $postsId = array_keys($posts);
+                break;
 
-            echo '<pre>';
-            var_dump($this->get_posts_list($args));
-            echo '</pre>';
+            case 'manually':
+                $postsId = [];
+
+                foreach ($settings['posts_list'] as $item) {
+                    $postsId[] = $item['posts_select_control'];
+                }
+                break;
+
+            default:
+                echo "Something wrong...";
+                break;
         }
 
 
-        if ($postsVariable === 'manually') {
+        foreach ($postsId as $id) {
+            $post = $this->get_posts_contents($id);
 
-            foreach ($settings['posts_list'] as $post) {
-                echo '<pre>';
-                var_dump($this->get_posts_contents($post['posts_list_control']));
-                echo '</pre>';
-            }
+            echo '<pre>';
+            var_dump($post);
+            echo '</pre>';
         }
     }
 }
