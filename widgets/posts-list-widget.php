@@ -69,22 +69,35 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
     /**
      * Helpers: Function for get posts list.
      */
-    private function get_posts_list($settings = ['count' => -1, 'order' => 'date-desc'])
+    private function get_posts_list($settings = [])
     {
-
-        $order = explode('-', $settings['order']);
 
         $args = [
             'post_type'      => 'post',
             'post_status'    => 'publish',
-            'posts_per_page' => $settings['count'],
-            'orderby'        => $order[0],
-            'order'          => $order[1],
+            'posts_per_page' => -1,
+            'orderby'        => 'date',
+            'order'          => 'desc',
         ];
 
-        if ($order[0] === 'post_views') {
-            $args['meta_key'] = $order[0];
-            $args['orderby']  = 'meta_value_num';
+        if (isset($settings['count'])) {
+            $args['posts_per_page'] = $settings['count'];
+        }
+
+        if (isset($settings['order'])) {
+            $order = explode('-', $settings['order']);
+
+            $args['orderby'] = $order[0];
+            $args['order'] = $order[1];
+
+            if ($order[0] === 'post_views') {
+                $args['orderby']  = 'meta_value_num';
+                $args['meta_key'] = $order[0];
+            }
+        }
+
+        if (isset($settings['postIDs'])) {
+            $args['post__in'] = $settings['postIDs'];
         }
 
 
@@ -237,32 +250,44 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
         $settings = $this->get_settings_for_display();
 
         $postsShowMethod = $settings['posts_show_method'];
-        $postsId = [];
+        $postOrderMethod = $settings['posts_order'];
+        $postsListID = [];
+
+
 
         switch ($postsShowMethod) {
+
             case 'auto':
-                $postsId = [];
 
                 $posts = $this->get_posts_list([
                     'count' => $settings['posts_count'],
-                    'order' => $settings['posts_order']
+                    'order' => $postOrderMethod
                 ]);
 
-                $postsId = array_keys($posts);
+                $postsListID = array_keys($posts);
+                
                 break;
 
             case 'manually':
-                $postsId = [];
 
                 foreach ($settings['posts_list'] as $item) {
-                    $postsId[] = $item['posts_select_control'];
+                    $postsListID[] = $item['posts_select_control'];
                 }
+
+                $posts = $this->get_posts_list([
+                    'count' => count($postsListID),
+                    'order' => $postOrderMethod,
+                    'postIDs' =>  $postsListID
+                ]);
+
+                $postsListID = array_keys($posts);
+
                 break;
         } ?>
 
         <div class="elementor-posts-list-widget">
 
-            <?php foreach ($postsId as $id) { ?>
+            <?php foreach ($postsListID as $id) { ?>
 
                 <?php $post = $this->get_posts_content($id); ?>
 
