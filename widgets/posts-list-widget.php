@@ -38,7 +38,7 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
      */
     public function get_style_depends()
     {
-        return array('elementor-posts-list-widget');
+        return ['elementor-posts-list-widget'];
     }
 
     /**
@@ -124,7 +124,6 @@ class Elementor_Posts_List_Widget extends \Elementor\Widget_Base
             'thumbnail' => get_the_post_thumbnail_url($id),
             'date' => get_the_date('', $id),
             'author' => get_the_author($id),
-
             'views' => get_post_meta($id, 'post_views', true)
         ];
 
